@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         wimsdashv3
 // @namespace    http://tampermonkey.net/
-// @version      0.7
+// @version      
 // @description  WIMS Dashboard V3 with editable red thresholds
 // @match        https://optimus-internal.amazon.com/*
 // @grant        none
