@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         wimsdash
 // @namespace    http://tampermonkey.net/
-// @version      1.01
+// @version      1.02
 // @description  WIMS Dashboard - Live queue metrics with parent/sub-team hierarchy, dwell time tracking, customizable thresholds, lobby auto-detection, and theme-adaptive UI. Created by Jeffrey Robles Bataz @nroblesb
 // @match        https://optimus-internal.amazon.com/*
 // @grant        none
 // @run-at       document-idle
-// @updateURL    https://raw.githubusercontent.com/nroblesb/wims-dashboard/main/wimsdash-1.01.user.js
-// @downloadURL  https://raw.githubusercontent.com/nroblesb/wims-dashboard/main/wimsdash-1.01.user.js
+// @updateURL    https://raw.githubusercontent.com/nroblesb/wims-dashboard/main/wimsdash-1.02.user.js
+// @downloadURL  https://raw.githubusercontent.com/nroblesb/wims-dashboard/main/wimsdash-1.02.user.js
 // ==/UserScript==
 
 (function(){
@@ -29,12 +29,47 @@ XMLHttpRequest.prototype.send=function(body){
 };
 let Q=JSON.parse(localStorage.getItem('wd2-teams')||'null')||{
  c2c:{name:'C2C',collapsed:true,subs:{
-   c2c_core:{name:'C2C',lobbies:['NA_C2C_R4C','NA_C2C_R4D'],thresholds:{green:1,yellow:3,red:null}},
-   crits_high:{name:'Crits & High',lobbies:['NA_WIMS_CRITICAL_PLUS','NA_WIMS_HIGH_PLUS'],thresholds:{green:5,yellow:10,red:null}}
+   c2c:{name:'C2C',lobbies:['NA_C2C_R4C','NA_C2C_R4D'],thresholds:{green:1,yellow:3,red:4}},
+   ca_dm:{name:'CA DM',lobbies:['NA_C2C_WIMS_CANADA'],thresholds:{green:1,yellow:3,red:4}},
+   afe:{name:'AFE',lobbies:['NA_AFE_C2C'],thresholds:{green:1,yellow:3,red:4}},
+   ib:{name:'IB',lobbies:['NA_C2C_IB'],thresholds:{green:1,yellow:3,red:4}},
+   grocery:{name:'Grocery',lobbies:['NA_AMAZON_GROCERY_C2C'],thresholds:{green:1,yellow:3,red:4}},
+   pharmacy:{name:'Pharmacy',lobbies:['NA_C2C_WIMS_PHARMACY'],thresholds:{green:1,yellow:3,red:4}},
+   global_mile:{name:'Global Mile',lobbies:['NA_GLOBAL_MILE'],thresholds:{green:1,yellow:3,red:4}}
  }},
- cases:{name:'Cases',collapsed:true,subs:{
-   ca_dm:{name:'CA DM',lobbies:['NA_C2C_WIMS_CANADA','NA_WIMS_PRILO_CASES_CANADA','NA_WIMS_SUPPORT_CASES_CANADA','NA_WIMS_CANADA'],thresholds:null},
-   grocery:{name:'Grocery',lobbies:['NA_AMAZON_GROCERY','NA_AMAZON_GROCERY_C2C','NA_AMAZON_GROCERY_CASES'],thresholds:null}
+ critical_wims:{name:'Critical WIMs',collapsed:true,subs:{
+   critical_wims:{name:'Critical WIMS',lobbies:['NA_WIMS_CRITICAL_PLUS'],thresholds:{green:10,yellow:14,red:15}},
+   ca_dm:{name:'CA DM',lobbies:['NA_WIMS_CANADA'],thresholds:{green:10,yellow:14,red:15}},
+   afe:{name:'AFE',lobbies:['NA_AFE_WIMS_CRIT_HIGH'],thresholds:{green:10,yellow:14,red:15}},
+   ib:{name:'IB',lobbies:['NA_WIMS_IB'],thresholds:{green:10,yellow:14,red:15}},
+   ddu:{name:'DDU',lobbies:['DDU_WIMS_CRITICAL'],thresholds:{green:10,yellow:14,red:15}},
+   grocery:{name:'Grocery',lobbies:['NA_AMAZON_GROCERY'],thresholds:{green:10,yellow:14,red:15}},
+   sameday:{name:'SameDay',lobbies:['NA_WIMS_PFSD_SSD'],thresholds:{green:10,yellow:14,red:15}},
+   pharmacy:{name:'Pharmacy',lobbies:['NA_WIMS_PHARMACY'],thresholds:{green:10,yellow:14,red:15}},
+   global_mile:{name:'Global Mile',lobbies:['NA_GLOBAL_MILE'],thresholds:{green:10,yellow:14,red:15}}
+ }},
+ high_wims:{name:'High WIMs',collapsed:true,subs:{
+   high__wims:{name:'High+ WIMs',lobbies:['NA_WIMS_HIGH_PLUS'],thresholds:{green:20,yellow:29,red:30}},
+   ca_dm:{name:'CA DM',lobbies:['NA_WIMS_CANADA'],thresholds:{green:20,yellow:29,red:30}},
+   afe:{name:'AFE',lobbies:['NA_AFE_WIMS_CRIT_HIGH'],thresholds:{green:20,yellow:29,red:30}},
+   ib:{name:'IB',lobbies:['NA_WIMS_IB'],thresholds:{green:20,yellow:29,red:30}},
+   ddu:{name:'DDU',lobbies:['DDU_WIMS_HIGH'],thresholds:{green:20,yellow:29,red:30}},
+   grocery:{name:'Grocery',lobbies:['NA_AMAZON_GROCERY'],thresholds:{green:20,yellow:29,red:30}},
+   sameday:{name:'SameDay',lobbies:['NA_WIMS_PFSD_SSD'],thresholds:{green:20,yellow:29,red:30}},
+   pharmacy:{name:'Pharmacy',lobbies:['NA_WIMS_PHARMACY'],thresholds:{green:20,yellow:29,red:30}},
+   global_mile:{name:'Global Mile',lobbies:['NA_GLOBAL_MILE'],thresholds:{green:20,yellow:29,red:30}}
+ }},
+ other_wims:{name:'Other WIMs',collapsed:true,subs:{
+   high_wims:{name:'High WIMs',lobbies:['NA_WIMS_HIGH'],thresholds:null},
+   ca_dm_cases:{name:'CA DM Cases',lobbies:['NA_WIMS_SUPPORT_CASES_CANADA'],thresholds:null},
+   afe_critical_and_high:{name:'AFE Critical and High',lobbies:['NA_AFE_WIMS_CRIT_HIGH'],thresholds:null},
+   ib:{name:'IB',lobbies:['NA_WIMS_IB'],thresholds:null},
+   ddu_support:{name:'DDU Support',lobbies:['NA_WIMS_DDU_SUPPORT'],thresholds:null},
+   grocery_wims:{name:'Grocery WIMs',lobbies:['NA_AMAZON_GROCERY'],thresholds:null},
+   grocery_cases:{name:'Grocery Cases',lobbies:['NA_AMAZON_GROCERY_CASES'],thresholds:null},
+   sameday:{name:'SameDay',lobbies:['NA_WIMS_PFSD_SSD'],thresholds:null},
+   pharmacy:{name:'Pharmacy',lobbies:['NA_WIMS_PHARMACY'],thresholds:null},
+   global_mile:{name:'Global Mile',lobbies:['NA_GLOBAL_MILE'],thresholds:null}
  }}
 };
 function save(){localStorage.setItem('wd2-teams',JSON.stringify(Q))}
@@ -71,11 +106,7 @@ function dwellColor(ms,th){
  if(m<=th.green)return'#2ecc71';if(m<=th.yellow)return'#f39c12';
  if(th.red&&m<th.red)return'#f39c12';return'#e74c3c';
 }
-function parentDwellColor(pk){
- let worst=null,wl=0;
- Object.entries(Q[pk].subs).forEach(([sk,sub])=>{const d=data[pk+'_'+sk];if(d&&sub.thresholds){const m=Math.floor(d.dwell/60000);let l=0;if(sub.thresholds.red){if(m>=sub.thresholds.red)l=2;else if(m>sub.thresholds.green)l=1}else{if(m>sub.thresholds.yellow)l=2;else if(m>sub.thresholds.green)l=1}if(l>wl){wl=l;worst=l===2?'#e74c3c':'#f39c12'}}});
- return worst;
-}
+function parentDwellColor(pk){  let worst='#2ecc71',wl=-1,has=false;  Object.entries(Q[pk].subs).forEach(([sk,sub])=>{const d=data[pk+'_'+sk];if(d&&sub.thresholds){has=true;const m=Math.floor(d.dwell/60000);let l=0;if(sub.thresholds.red){if(m>=sub.thresholds.red)l=2;else if(m>sub.thresholds.green)l=1}else{if(m>sub.thresholds.yellow)l=2;else if(m>sub.thresholds.green)l=1}if(l>wl){wl=l;worst=l===2?'#e74c3c':l===1?'#f39c12':'#2ecc71'}}});  return has?worst:null; }
 function fmt(v){return v!=null?v:'—'}
 function ago(ts){if(!ts)return'';const s=Math.floor((Date.now()-ts)/1000);return s<60?s+'s ago':s<3600?Math.floor(s/60)+'m ago':Math.floor(s/3600)+'h ago'}
 function getTheme(){
